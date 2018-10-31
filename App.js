@@ -30,6 +30,7 @@ export default class App extends Component<Props> {
             hash: '',
             numberOfIteration: '',
             selectedMethod: '',
+            //on peut ajouter n'import quel algorithm
             methods: [
                 {
                     label: 'MD5',
@@ -38,18 +39,6 @@ export default class App extends Component<Props> {
                 {
                     label: 'SHA-1',
                     value: 'SHA-1'
-                },
-                {
-                    label: 'SHA-224',
-                    value: 'SHA-224'
-                },
-                {
-                    label: 'SHA-384',
-                    value: 'SHA-384'
-                },
-                {
-                    label: 'SHA-512',
-                    value: 'SHA-512'
                 }
             ]
         }
@@ -96,15 +85,8 @@ export default class App extends Component<Props> {
                     />
 
 
-                    <TextInput
-                        label='number of iterations'
-                        value={this.state.numberOfIteration}
-                        onChangeText={text => this.setState({numberOfIteration: text})}
-                        style={{marginVertical: 10}}
-                    />
-
                     <Button mode="contained"
-                            style={{marginTop: 20}}
+                            style={{marginTop: 40}}
                             onPress={() => {
                                 StringToHash.getHash(this.state.selectedMethod, this.state.text)
                                     .then((response) => {
