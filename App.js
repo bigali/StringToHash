@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Clipboard, View} from 'react-native';
+import {Platform, StyleSheet, Clipboard, View, Share} from 'react-native';
 import {Provider as PaperProvider, TextInput, Appbar, Button, Paragraph, Card, Title} from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import StringToHash from './stringToHash'
@@ -42,6 +42,16 @@ export default class App extends Component<Props> {
                 }
             ]
         }
+    }
+
+    onShare(text) {
+        Share.share({
+            message: text,
+            title: 'share hash'
+        }, {
+            // Android only:
+            dialogTitle: 'share hash',
+        })
     }
 
     render() {
@@ -111,7 +121,8 @@ export default class App extends Component<Props> {
                                     </Paragraph>
                                 </Card.Content>
                                 <Card.Actions>
-                                    <Button onPress={() =>   Clipboard.setString(this.state.hash)}>copy to Clipboard </Button>
+                                    <Button onPress={() =>   Clipboard.setString(this.state.hash)}>Copy to Clipboard</Button>
+                                    <Button onPress={() =>   this.onShare(this.state.hash)}>Share</Button>
                                 </Card.Actions>
                             </Card> :
                             null}
