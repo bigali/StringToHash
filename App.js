@@ -7,30 +7,52 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Clipboard, View, Share} from 'react-native';
-import {Provider as PaperProvider, TextInput, Appbar, Button, Paragraph, Card, Title} from 'react-native-paper';
+import {Platform, StyleSheet, Clipboard, View, Share, StatusBar} from 'react-native';
+import {
+    Provider as PaperProvider,
+    TextInput,
+    Appbar,
+    Button,
+    Paragraph,
+    Card,
+    Title,
+    BottomNavigation,
+    Text, DefaultTheme,
+    Colors
+} from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import StringToHash from './stringToHash'
 import sealdLogo from './images/logo.png'
-const instructions = Platform.select({
-    ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-    android:
-        'Double tap R on your keyboard to reload,\n' +
-        'Shake or press menu button for dev menu',
-});
+import RNFileSelector from "react-native-file-selector";
+import TextScene from "./TextScene";
+import FileScene from "./FileScene";
 
+const theme = {
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        primary: Colors.red500,
+        accent: Colors.yellow200,
+    },
+};
 type Props = {};
 export default class App extends Component<Props> {
     constructor(props) {
         super(props);
+        console.log(Colors.red500)
 
-        this.inputRefs = {};
+        this.child = React.createRef();
         this.state = {
             text: '',
+            file: '',
             hash: '',
             numberOfIteration: '',
             selectedMethod: '',
-            //on peut ajouter n'import quel algorithm
+            index: 0,
+            routes: [
+                {key: 'text', title: 'Text', icon: 'text-fields'},
+                {key: 'file', title: 'File', icon: 'attach-file'},
+            ],
             methods: [
                 {
                     label: 'MD5',
@@ -39,12 +61,24 @@ export default class App extends Component<Props> {
                 {
                     label: 'SHA-1',
                     value: 'SHA-1'
+                },
+                {
+                    label: 'SHA-224',
+                    value: 'SHA-224'
+                },
+                {
+                    label: 'SHA-384',
+                    value: 'SHA-384'
+                },
+                {
+                    label: 'SHA-512',
+                    value: 'SHA-512'
                 }
             ]
         }
     }
 
-    onShare(text) {
+    onShare = (text) => {
         Share.share({
             message: text,
             title: 'share hash'
@@ -54,80 +88,41 @@ export default class App extends Component<Props> {
         })
     }
 
+    TextRoute = () => <TextScene ref={this.child}/>;
+
+    FileRoute = () => <FileScene ref={this.child}/>;
+
+
+    _handleIndexChange = index => this.setState({index});
+
+    _renderScene = BottomNavigation.SceneMap({
+        text: this.TextRoute,
+        file: this.FileRoute
+    });
+    _onRefresh = () => {
+        this.child.current.refresh();
+    }
+
     render() {
         return (
-            <PaperProvider>
-                <Appbar.Header>
-                    <Appbar.Content
-                        title="string to hash"
+            <PaperProvider theme={theme}>
+                <StatusBar
+                    backgroundColor='#f44336'
+                    barStyle="light-content"
+                />
+                <View style={{flex: 1}}>
+                    <Appbar.Header>
+                        <Appbar.Content
+                            title="# hash tools"
+                        />
+                        <Appbar.Action icon="refresh" onPress={this._onRefresh}/>
+
+                    </Appbar.Header>
+                    <BottomNavigation
+                        navigationState={this.state}
+                        onIndexChange={this._handleIndexChange}
+                        renderScene={this._renderScene}
                     />
-                </Appbar.Header>
-                <View style={styles.container}>
-                    <TextInput
-                        style={{marginVertical: 10}}
-                        label='Text to hash'
-                        value={this.state.text}
-                        onChangeText={text => this.setState({text})}
-                    />
-
-                    <RNPickerSelect
-                        items={this.state.methods}
-                        placeholder={{
-                            label: 'Select a method...',
-                            value: null,
-                        }}
-
-                        onValueChange={(value) => {
-                            this.setState({
-                                selectedMethod: value,
-                            });
-                        }}
-                        onUpArrow={() => {
-                        }}
-                        onDownArrow={() => {
-                        }}
-                        ref={(el) => {
-                            this.inputRefs.picker = el;
-                        }}
-
-                        style={{...pickerSelectStyles}}
-
-                    />
-
-
-                    <Button mode="contained"
-                            style={{marginTop: 40}}
-                            onPress={() => {
-                                StringToHash.getHash(this.state.selectedMethod, this.state.text)
-                                    .then((response) => {
-                                        console.log("response", response)
-                                        this.setState({
-                                            hash: response.hash
-                                        })
-                                    })
-                                    .catch((err) => {
-                                        console.log("error", err)
-                                    })
-                            }}>
-                        Confirm
-                    </Button>
-                    {
-                        this.state.hash ?
-                            <Card style={{marginTop: 10}}>
-                                <Card.Content>
-                                    <Title>hash result</Title>
-                                    <Paragraph>
-                                        {this.state.hash}
-                                    </Paragraph>
-                                </Card.Content>
-                                <Card.Actions>
-                                    <Button onPress={() =>   Clipboard.setString(this.state.hash)}>Copy to Clipboard</Button>
-                                    <Button onPress={() =>   this.onShare(this.state.hash)}>Share</Button>
-                                </Card.Actions>
-                            </Card> :
-                            null}
-
-
                 </View>
             </PaperProvider>
         );
